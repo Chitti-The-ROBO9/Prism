@@ -49,7 +49,7 @@ export async function POST(request) {
 
   const parsed = requestSchema.safeParse(payload);
   if (!parsed.success) return errorResponse(400, "Please provide a clear decision to explore.", "invalid_decision");
-  if (!process.env.OPENAI_API_KEY) return Response.json({ demo: true }, { headers: { "Cache-Control": "no-store" } });
+  if (!process.env.OPENAI_API_KEY) return Response.json({ demo: true, code: "demo_mode" }, { headers: { "Cache-Control": "no-store" } });
 
   try {
     const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY, timeout: 45_000, maxRetries: 1 });

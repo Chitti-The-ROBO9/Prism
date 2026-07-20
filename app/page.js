@@ -3,7 +3,8 @@
 import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, MotionConfig } from "motion/react";
-import { defaultContext, demoAnalysis } from "@/lib/decision-data";
+import { defaultContext } from "@/lib/decision-data";
+import { createDemoAnalysis } from "@/lib/demo-analysis";
 import { useWorkspaceSession } from "@/hooks/use-workspace-session";
 import { useOnlineStatus } from "@/hooks/use-online-status";
 import { PrismMark } from "@/components/prism-ui";
@@ -34,7 +35,7 @@ export default function Prism() {
   const [stage, setStage] = useState("intake");
   const [decision, setDecision] = useState("");
   const [context, setContext] = useState(defaultContext);
-  const [analysis, setAnalysis] = useState(demoAnalysis);
+  const [analysis, setAnalysis] = useState(() => createDemoAnalysis("Explore an important decision", defaultContext));
   const [source, setSource] = useState("demo");
   const [notice, setNotice] = useState("");
   const [requestError, setRequestError] = useState(null);
@@ -72,12 +73,12 @@ export default function Prism() {
     setStage("workspace");
   };
 
-  const useDemo = () => openWorkspace(demoAnalysis, "demo");
+  const openDemoWorkspace = () => openWorkspace(createDemoAnalysis(decision, context), "demo");
 
   const analyze = async () => {
     if (isSubmitting) return;
     if (!isOnline) {
-      setRequestError({ message: "You are offline. Prism's interactive demo is still available while the connection returns.", retryable: false });
+      openDemoWorkspace();
       return;
     }
     setIsSubmitting(true); setRequestError(null); setStage("loading");
@@ -92,8 +93,13 @@ export default function Prism() {
       const remainingDelay = Math.max(0, MIN_LOADING_MS - (Date.now() - startedAt));
       if (remainingDelay) await new Promise((resolve) => window.setTimeout(resolve, remainingDelay));
       if (!response.ok) throw { response, payload };
-      openWorkspace(payload.analysis || demoAnalysis, payload.demo ? "demo" : "live");
+      openWorkspace(payload.analysis || createDemoAnalysis(decision, context), payload.demo ? "demo" : "live");
     } catch (failure) {
+      const shouldUseDemo = failure?.name === "AbortError" || !failure?.response || failure.response.status === 429 || failure.response.status >= 500;
+      if (shouldUseDemo) {
+        openWorkspace(createDemoAnalysis(decision, context), "demo");
+        return;
+      }
       const error = failure?.name === "AbortError"
         ? { message: "Prism took too long to build this model. Your decision is still here - please try again.", retryable: true }
         : failure?.response ? formatApiError(failure.response, failure.payload) : { message: "Your connection was interrupted. Please check it and try again.", retryable: true };
@@ -111,7 +117,7 @@ export default function Prism() {
     <nav className="topbar" aria-label="Prism"><button className="brand" type="button" onClick={reset} aria-label="Start a new Prism decision"><PrismMark /><span>Prism</span></button><div className={`nav-note ${isOnline ? "" : "is-offline"}`} role="status"><span className="status-dot" /> {isOnline ? "Decision workspace" : "Offline - demo available"}</div></nav>
     <AnimatePresence mode="wait">
       {stage === "intake" && <DecisionIntake key="intake" decision={decision} setDecision={setDecision} onContinue={continueToContext} notice={notice} />}
-      {stage === "context" && <ContextQuestions key="context" decision={decision} context={context} setContext={setContext} onBack={() => setStage("intake")} onAnalyze={analyze} error={requestError} onDemo={useDemo} isSubmitting={isSubmitting} />}
+      {stage === "context" && <ContextQuestions key="context" decision={decision} context={context} setContext={setContext} onBack={() => setStage("intake")} onAnalyze={analyze} error={requestError} onDemo={openDemoWorkspace} isSubmitting={isSubmitting} />}
       {stage === "loading" && <BuildingModel key="loading" />}
       {stage === "workspace" && <DecisionWorkspace key="workspace" analysis={analysis} source={source} onNewDecision={reset} />}
     </AnimatePresence>

@@ -35,7 +35,7 @@ The product uses transparent language throughout: outputs are framed as working 
 - **Decision Sandbox** - adjusts time, budget, risk tolerance, and priorities to reveal what the plan is most sensitive to.
 - **Decision Confidence Map** - separates well-supported areas from personal judgments, uncertainty, and items that need verification.
 - **Research Mode** - converts uncertainty into concrete next steps for gathering evidence.
-- **Demo Mode** - remains fully explorable without an API key, API quota, or network connection.
+- **Demo Mode** - creates a context-aware simulated analysis from the user's own decision and context when live analysis is unavailable.
 
 ## Tech stack
 
@@ -70,7 +70,7 @@ flowchart TD
 - Model output is validated before it reaches the UI.
 - Responses are not stored by the API route (`store: false`).
 - The active decision workspace is saved locally so accidental refreshes do not lose work.
-- When live analysis is unavailable, Prism provides a polished interactive demo rather than a broken screen.
+- When live analysis is unavailable, Prism generates a context-aware simulated model from the user's input rather than showing a broken screen or unrelated sample.
 
 ### Devpost architecture diagram
 
