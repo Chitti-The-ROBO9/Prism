@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 const STORAGE_KEY = "prism-active-workspace";
 
@@ -22,13 +22,13 @@ export function useWorkspaceSession() {
     return () => window.clearTimeout(restore);
   }, []);
 
-  const save = (session) => {
+  const save = useCallback((session) => {
     try { window.localStorage.setItem(STORAGE_KEY, JSON.stringify(session)); } catch { /* Storage is optional. */ }
-  };
+  }, []);
 
-  const clear = () => {
+  const clear = useCallback(() => {
     try { window.localStorage.removeItem(STORAGE_KEY); } catch { /* Storage is optional. */ }
-  };
+  }, []);
 
   return { hydrated, restoredSession, save, clear };
 }

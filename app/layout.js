@@ -1,7 +1,8 @@
 import "./globals.css";
+import "./polish.css";
 
 export const metadata = {
-  title: "Prism — Understand your decision",
+  title: "Prism - Understand your decision",
   description: "A decision workspace for exploring perspectives, uncertainty, and trade-offs."
 };
 

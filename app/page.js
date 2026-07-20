@@ -14,9 +14,14 @@ const MIN_LOADING_MS = 850;
 function formatApiError(response, payload) {
   const fallback = "Prism could not complete that analysis just now. Please try again.";
   if (response.status === 429 || payload?.code === "quota_exhausted") return { message: "Your OpenAI credits or request quota are currently unavailable. Please check your account, wait a moment, or use the interactive demo.", retryable: true };
-  if (response.status === 408 || payload?.code === "upstream_timeout") return { message: "Prism took too long to build this model. Your decision is still here—please try again.", retryable: true };
+  if (response.status === 408 || response.status === 504 || payload?.code === "upstream_timeout") return { message: "Prism took too long to build this model. Your decision is still here - please try again.", retryable: true };
   if (response.status >= 500) return { message: payload?.error || fallback, retryable: true };
   return { message: payload?.error || fallback, retryable: false };
+}
+
+function isWorkspaceSession(session) {
+  const analysis = session?.analysis;
+  return typeof session?.decision === "string" && analysis && typeof analysis.title === "string" && analysis.blueprint && Array.isArray(analysis.lenses) && Array.isArray(analysis.scenarios) && Array.isArray(analysis.evidenceMap) && Array.isArray(analysis.research) && Array.isArray(analysis.reflection);
 }
 
 export default function Prism() {
@@ -33,14 +38,19 @@ export default function Prism() {
   const { hydrated, restoredSession, save, clear } = useWorkspaceSession();
 
   useEffect(() => {
-    if (!hydrated || restoredOnce.current || !restoredSession?.decision || !restoredSession?.analysis) return;
-    restoredOnce.current = true;
-    setDecision(restoredSession.decision);
-    setContext({ ...defaultContext, ...restoredSession.context });
-    setAnalysis(restoredSession.analysis);
-    setSource(restoredSession.source || "demo");
-    setStage("workspace");
-  }, [hydrated, restoredSession]);
+    if (!hydrated || restoredOnce.current) return;
+    const restore = window.setTimeout(() => {
+      restoredOnce.current = true;
+      if (!restoredSession) return;
+      if (!isWorkspaceSession(restoredSession)) { clear(); return; }
+      setDecision(restoredSession.decision);
+      setContext({ ...defaultContext, ...restoredSession.context });
+      setAnalysis(restoredSession.analysis);
+      setSource(restoredSession.source === "live" ? "live" : "demo");
+      setStage("workspace");
+    }, 0);
+    return () => window.clearTimeout(restore);
+  }, [clear, hydrated, restoredSession]);
 
   useEffect(() => () => requestController.current?.abort(), []);
 
@@ -64,6 +74,7 @@ export default function Prism() {
     requestController.current?.abort();
     requestController.current = new AbortController();
     const timeout = window.setTimeout(() => requestController.current?.abort(), REQUEST_TIMEOUT_MS);
+
     try {
       const response = await fetch("/api/analyze", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ decision: decision.trim(), context }), signal: requestController.current.signal });
       const payload = await response.json().catch(() => ({}));
@@ -73,7 +84,7 @@ export default function Prism() {
       openWorkspace(payload.analysis || demoAnalysis, payload.demo ? "demo" : "live");
     } catch (failure) {
       const error = failure?.name === "AbortError"
-        ? { message: "Prism took too long to build this model. Your decision is still here—please try again.", retryable: true }
+        ? { message: "Prism took too long to build this model. Your decision is still here - please try again.", retryable: true }
         : failure?.response ? formatApiError(failure.response, failure.payload) : { message: "Your connection was interrupted. Please check it and try again.", retryable: true };
       setRequestError(error); setStage("context");
     } finally {
@@ -86,7 +97,7 @@ export default function Prism() {
   };
 
   return <MotionConfig reducedMotion="user"><main>
-    <nav className="topbar" aria-label="Prism"><button className="brand" onClick={reset} aria-label="Start a new Prism decision"><PrismMark /><span>Prism</span></button><div className="nav-note"><span className="status-dot" /> Decision workspace</div></nav>
+    <nav className="topbar" aria-label="Prism"><button className="brand" type="button" onClick={reset} aria-label="Start a new Prism decision"><PrismMark /><span>Prism</span></button><div className="nav-note"><span className="status-dot" /> Decision workspace</div></nav>
     <AnimatePresence mode="wait">
       {stage === "intake" && <DecisionIntake key="intake" decision={decision} setDecision={setDecision} onContinue={continueToContext} notice={notice} />}
       {stage === "context" && <ContextQuestions key="context" decision={decision} context={context} setContext={setContext} onBack={() => setStage("intake")} onAnalyze={analyze} error={requestError} onDemo={useDemo} isSubmitting={isSubmitting} />}

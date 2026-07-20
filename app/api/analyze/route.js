@@ -27,12 +27,14 @@ function errorResponse(status, error, code, retryAfter) {
 function mapOpenAiError(error) {
   const status = error?.status || error?.statusCode;
   const message = String(error?.message || "").toLowerCase();
+
   if (status === 429 || message.includes("quota") || message.includes("rate limit")) {
     return errorResponse(429, "Prism has reached the current OpenAI request or credit limit. Please wait a moment, check available credits, or use the interactive demo.", "quota_exhausted", 30);
   }
-  if (status === 401 || status === 403) return errorResponse(503, "Prism’s analysis service is not configured correctly. Please try again later or use the interactive demo.", "provider_configuration");
-  if (status === 408 || error?.name === "AbortError") return errorResponse(504, "Prism’s analysis service took too long to respond. Please try again.", "upstream_timeout");
-  return errorResponse(502, "Prism could not complete that analysis just now. Your decision has not been lost—please try again.", "analysis_unavailable");
+  if (status === 401 || status === 403) return errorResponse(503, "Prism's analysis service is not configured correctly. Please try again later or use the interactive demo.", "provider_configuration");
+  if (status === 408 || error?.name === "AbortError") return errorResponse(504, "Prism's analysis service took too long to respond. Please try again.", "upstream_timeout");
+  if (error instanceof SyntaxError) return errorResponse(502, "Prism received an incomplete decision model. Please try again.", "invalid_model_output");
+  return errorResponse(502, "Prism could not complete that analysis just now. Your decision has not been lost - please try again.", "analysis_unavailable");
 }
 
 function extractJson(outputText) {
@@ -53,9 +55,11 @@ export async function POST(request) {
     const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY, timeout: 45_000, maxRetries: 1 });
     const response = await client.responses.create({
       model: process.env.PRISM_OPENAI_MODEL || "gpt-5.6",
+      store: false,
+      temperature: 0.2,
       input: [
         { role: "system", content: `You are Prism's careful reasoning engine. ${analysisJsonInstruction}` },
-        { role: "user", content: `Decision: ${parsed.data.decision}\nContext: ${JSON.stringify(parsed.data.context)}` }
+        { role: "user", content: `Decision data:\n${JSON.stringify({ decision: parsed.data.decision, context: parsed.data.context })}` }
       ]
     });
     const analysis = analysisSchema.safeParse(extractJson(response.output_text));

@@ -16,7 +16,7 @@ export function Insight({ label, text, icon }) {
 
 export function InlineError({ message, onRetry }) {
   if (!message) return null;
-  return <div className="inline-error" role="alert"><AlertCircle size={17} /><span>{message}</span>{onRetry && <button onClick={onRetry}>Try again</button>}</div>;
+  return <div className="inline-error" role="alert"><AlertCircle size={17} /><span>{message}</span>{onRetry && <button type="button" onClick={onRetry}>Try again</button>}</div>;
 }
 
 export function BlueprintIcon({ className = "" }) {

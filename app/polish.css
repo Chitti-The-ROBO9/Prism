@@ -1,0 +1,34 @@
+/* Judge-facing polish: a little depth, clear feedback, and no visual noise. */
+::selection{background:#dedbff;color:#211d59}
+.topbar{position:sticky;top:0}
+.decision-box{transition:border-color .24s ease,box-shadow .24s ease,transform .24s ease}
+.decision-box:focus-within{border-color:#a9a2ef;box-shadow:0 22px 55px rgba(50,46,130,.14),0 2px 3px rgba(30,30,70,.03)}
+.decision-box.is-ready{border-color:#bcb7f1}.decision-box.is-ready .decision-box-footer>span{color:#5c55c4}
+.primary-button svg,.secondary-button svg,.dark-button svg{transition:transform .2s ease}
+.primary-button:hover svg,.secondary-button:hover svg,.dark-button:hover svg{transform:translateX(2px)}
+.prompt-row button{transition:border-color .2s ease,color .2s ease,background .2s ease,transform .2s ease,box-shadow .2s ease}
+.prompt-row button:hover{transform:translateY(-1px);box-shadow:0 7px 14px rgba(48,45,110,.06)}
+.back-button{display:inline-flex;align-items:center;gap:5px}
+.question-card{transition:border-color .2s ease,box-shadow .2s ease,transform .2s ease}
+.question-card:hover{border-color:#d0ceec;box-shadow:0 9px 22px rgba(39,38,88,.045);transform:translateY(-1px)}
+.question-card:focus-within{transform:translateY(-1px)}
+.decision-quote{font-style:italic}.decision-quote span{color:#756dd2;font-size:16px;font-weight:700}
+.loading-orbit{width:94px;height:94px;display:grid;place-items:center;border:1px solid #d7d4f6;border-radius:50%;margin:0 auto 26px;position:relative;background:radial-gradient(circle,#fafaff 40%,#f1f0ff 100%)}
+.loading-orbit:before,.loading-orbit:after{content:"";position:absolute;border-radius:50%;border:1px dashed #b8b2ed;animation:prism-orbit 2.8s linear infinite}
+.loading-orbit:before{inset:-8px}.loading-orbit:after{inset:10px;border-style:solid;border-color:#d5d2f6}
+.loading-orbit .prism-mark{margin:0;transform:rotate(30deg) scale(1.18)}
+.panel{transition:box-shadow .24s ease,border-color .24s ease}.panel:hover{border-color:#dfdfe9;box-shadow:0 11px 28px rgba(35,35,65,.045)}
+.workspace-nav{position:sticky;top:76px;z-index:5;background:rgba(250,250,253,.88);backdrop-filter:blur(12px)}
+.workspace-nav a{transition:color .2s ease,border-color .2s ease}
+.blue-node,.lens-list button,.scenario-tabs button{transition:background .2s ease,border-color .2s ease,color .2s ease,transform .2s ease,box-shadow .2s ease}
+.blue-node:hover,.lens-list button:hover,.scenario-tabs button:hover{transform:translateY(-1px)}
+.blue-node[aria-selected="true"]{box-shadow:0 5px 14px rgba(79,70,229,.09)}
+.lens-list button[aria-selected="true"]{box-shadow:inset 3px 0 0 #655cda}
+.scenario-tabs button[aria-selected="true"]{box-shadow:0 4px 11px rgba(79,70,229,.08)}
+.lens-detail,.blueprint-detail{will-change:transform,opacity}.stress-result{overflow:hidden}.sensitivity{transition:background .2s ease}
+.reflection{position:relative;overflow:hidden}.reflection:before{content:"";position:absolute;width:420px;height:420px;right:-190px;top:-250px;border-radius:50%;background:radial-gradient(circle,rgba(129,124,235,.3),transparent 68%);pointer-events:none}.reflection>*{position:relative}
+.workspace-footer{padding-bottom:28px}
+@keyframes prism-orbit{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.loading-orbit:before,.loading-orbit:after{animation:none}.panel:hover,.question-card:hover,.blue-node:hover,.lens-list button:hover,.scenario-tabs button:hover,.prompt-row button:hover{transform:none}}
+@media(max-width:850px){.workspace-nav{top:76px}.panel:hover{box-shadow:0 5px 15px rgba(35,35,65,.025)}.question-card:hover{transform:none}}
+@media(max-width:570px){.workspace-nav{top:66px}.topbar{height:66px}.context-actions{align-items:stretch}.context-actions .primary-button{width:100%}.context-actions .demo-button{text-align:left}.loading-orbit{width:82px;height:82px}.question-card:hover{box-shadow:none}.reflection:before{right:-270px}}
