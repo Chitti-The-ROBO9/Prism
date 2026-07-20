@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowRight, ArrowUpRight, BadgeCheck, BrainCircuit, ChevronRight, CircleHelp, Compass, FlaskConical, Lightbulb, Plus, ScanSearch, ShieldAlert, Target, TriangleAlert, WandSparkles } from "lucide-react";
+import { ArrowRight, ArrowUpRight, BadgeCheck, BrainCircuit, ChevronRight, CircleHelp, Compass, FlaskConical, Lightbulb, Plus, ScanSearch, ShieldAlert, Sparkles, Target, TriangleAlert, WandSparkles } from "lucide-react";
 import { blueprintLabels } from "@/lib/decision-data";
 import { BlueprintIcon, Insight, PrismMark, SectionHeading } from "@/components/prism-ui";
 
@@ -31,6 +31,7 @@ export function DecisionWorkspace({ analysis, source, onNewDecision }) {
   return <motion.section className="workspace" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.44, ease: [0.22, 1, 0.36, 1] }}>
     <header className="workspace-head"><div><p className="eyebrow">Decision workspace <span className="demo-pill">{source === "demo" ? "Interactive preview" : "Live analysis"}</span></p><h1>{analysis.title}</h1><p>{analysis.summary}</p></div><button className="secondary-button" type="button" onClick={onNewDecision}><Plus size={16} /> New decision</button></header>
     <nav className="workspace-nav" aria-label="Decision workspace sections"><a href="#blueprint"><Target size={16} /> Blueprint</a><a href="#lenses"><ScanSearch size={16} /> Lenses</a><a href="#scenarios"><Compass size={16} /> Scenarios</a><a href="#reflection"><Lightbulb size={16} /> Reflection</a></nav>
+    {source === "demo" && <div className="demo-mode-notice" role="status"><Sparkles size={16} /><span><strong>Interactive demo mode</strong> Sample reasoning is shown here, so Prism remains fully explorable without API credits.</span></div>}
     <BlueprintPanel analysis={analysis} activeBlueprint={activeBlueprint} setActiveBlueprint={setActiveBlueprint} />
     <LensPanel analysis={analysis} activeLens={activeLens} setActiveLens={setActiveLens} />
     <ScenarioPanel analysis={analysis} activeScenario={activeScenario} setActiveScenario={setActiveScenario} />

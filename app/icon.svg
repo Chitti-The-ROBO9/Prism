@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <rect width="64" height="64" rx="16" fill="#17172D"/>
+  <rect x="24" y="11" width="24" height="24" rx="5" transform="rotate(30 24 11)" stroke="#AFA9FF" stroke-width="4"/>
+  <rect x="22" y="28" width="24" height="24" rx="5" transform="rotate(30 22 28)" stroke="#81E7E9" stroke-width="4"/>
+  <rect x="8" y="29" width="24" height="24" rx="5" transform="rotate(30 8 29)" stroke="#B878F4" stroke-width="4"/>
+</svg>

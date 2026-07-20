@@ -1,12 +1,18 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, MotionConfig } from "motion/react";
 import { defaultContext, demoAnalysis } from "@/lib/decision-data";
 import { useWorkspaceSession } from "@/hooks/use-workspace-session";
+import { useOnlineStatus } from "@/hooks/use-online-status";
 import { PrismMark } from "@/components/prism-ui";
 import { BuildingModel, ContextQuestions, DecisionIntake } from "@/components/decision-intake";
-import { DecisionWorkspace } from "@/components/decision-workspace";
+
+const DecisionWorkspace = dynamic(() => import("@/components/decision-workspace").then((module) => module.DecisionWorkspace), {
+  ssr: false,
+  loading: () => <section className="workspace-loading" aria-busy="true" aria-live="polite"><PrismMark /><p>Opening your decision workspace...</p></section>
+});
 
 const REQUEST_TIMEOUT_MS = 45_000;
 const MIN_LOADING_MS = 850;
@@ -35,6 +41,7 @@ export default function Prism() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const requestController = useRef(null);
   const restoredOnce = useRef(false);
+  const isOnline = useOnlineStatus();
   const { hydrated, restoredSession, save, clear } = useWorkspaceSession();
 
   useEffect(() => {
@@ -69,6 +76,10 @@ export default function Prism() {
 
   const analyze = async () => {
     if (isSubmitting) return;
+    if (!isOnline) {
+      setRequestError({ message: "You are offline. Prism's interactive demo is still available while the connection returns.", retryable: false });
+      return;
+    }
     setIsSubmitting(true); setRequestError(null); setStage("loading");
     const startedAt = Date.now();
     requestController.current?.abort();
@@ -97,7 +108,7 @@ export default function Prism() {
   };
 
   return <MotionConfig reducedMotion="user"><main>
-    <nav className="topbar" aria-label="Prism"><button className="brand" type="button" onClick={reset} aria-label="Start a new Prism decision"><PrismMark /><span>Prism</span></button><div className="nav-note"><span className="status-dot" /> Decision workspace</div></nav>
+    <nav className="topbar" aria-label="Prism"><button className="brand" type="button" onClick={reset} aria-label="Start a new Prism decision"><PrismMark /><span>Prism</span></button><div className={`nav-note ${isOnline ? "" : "is-offline"}`} role="status"><span className="status-dot" /> {isOnline ? "Decision workspace" : "Offline - demo available"}</div></nav>
     <AnimatePresence mode="wait">
       {stage === "intake" && <DecisionIntake key="intake" decision={decision} setDecision={setDecision} onContinue={continueToContext} notice={notice} />}
       {stage === "context" && <ContextQuestions key="context" decision={decision} context={context} setContext={setContext} onBack={() => setStage("intake")} onAnalyze={analyze} error={requestError} onDemo={useDemo} isSubmitting={isSubmitting} />}
