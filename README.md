@@ -48,13 +48,22 @@ The product uses transparent language throughout: outputs are framed as working 
 
 ## Architecture
 
-```text
-Browser
-  -> Decision and context intake
-  -> Next.js server route (/api/analyze)
-  -> OpenAI Responses API (GPT-5.6)
-  -> Zod-validated decision model
-  -> Interactive Prism workspace
+```mermaid
+flowchart TD
+    user[User]
+    frontend[Next.js Frontend<br/>Decision intake and workspace]
+    api[API Routes<br/>/api/analyze]
+    engine[Prism Reasoning Engine<br/>Prompt orchestration and validation]
+    openai[OpenAI Responses API<br/>GPT-5.6]
+    json[Structured JSON Response<br/>Zod-validated decision model]
+    ui[Interactive UI<br/>Blueprint, lenses, scenarios, reflection]
+
+    user --> frontend
+    frontend --> api
+    api --> engine
+    engine --> openai
+    openai --> json
+    json --> ui
 ```
 
 - API keys remain server-side and are never exposed to the browser.
@@ -62,6 +71,18 @@ Browser
 - Responses are not stored by the API route (`store: false`).
 - The active decision workspace is saved locally so accidental refreshes do not lose work.
 - When live analysis is unavailable, Prism provides a polished interactive demo rather than a broken screen.
+
+### Devpost architecture diagram
+
+Use this simplified version in the Devpost submission:
+
+```mermaid
+flowchart TD
+    user[User] --> frontend[Prism Frontend]
+    frontend --> api[Secure API Route]
+    api --> openai[GPT-5.6]
+    openai --> ui[Structured decision workspace]
+```
 
 ## Run locally
 
