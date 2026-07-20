@@ -2,64 +2,70 @@
 
 > **Understand your decision before you make it.**
 
-Prism is an AI-native decision workspace. It does not choose for people. Instead, it makes the structure behind an important decision visible: goals, values, constraints, assumptions, risks, unknowns, and trade-offs.
+Prism is an AI-native decision workspace for exploring complex choices through structured reasoning. Rather than giving users a single answer, Prism reveals the goals, constraints, assumptions, risks, unknowns, and trade-offs their decision depends on.
 
-Built for the OpenAI hackathon's Work & Productivity category.
+Built for the OpenAI hackathon's **Work & Productivity** category.
 
-## Why Prism
+## Project overview
 
-Most AI products respond with a polished answer. Prism starts one level earlier: it helps a person inspect what their decision depends on before they commit.
+Important decisions are rarely simple questions with one correct answer. They involve incomplete information, personal values, competing priorities, and assumptions that often go unnoticed.
 
-The intended outcome is not, "The AI told me what to do." It is, "I did not realise how many assumptions were inside this decision."
+Prism turns a decision into an explorable model. It helps users examine the structure behind a choice, apply relevant reasoning lenses, compare plausible scenarios, pressure-test fragile assumptions, and leave with concrete research actions and reflection prompts.
 
-## Experience
+Prism does not decide for people. It helps them make their own judgment more rigorous.
 
-1. **Decision intake** - enter a real choice and add the context that matters.
-2. **Decision Blueprint** - inspect the decision's goals, values, constraints, unknowns, assumptions, resources, risks, opportunities, stakeholders, and success criteria.
-3. **Reasoning lenses** - Prism selects relevant perspectives for the decision and explains why each one is useful.
-4. **Scenario explorer** - compare what changes when assumptions hold, weaken, or external conditions shift.
-5. **Stress test and sandbox** - deliberately pressure-test assumptions and adjust the conditions that make the decision sensitive.
-6. **Reflection** - leave with research actions and better questions, not a recommendation.
+## Problem statement
 
-## Screenshots
+Most AI assistants optimize for a polished recommendation. That is not always useful for decisions involving uncertainty: a confident answer can hide the assumptions, trade-offs, and missing evidence that matter most.
 
-Add final submission screenshots here before publishing the Devpost page:
+People need a workspace that helps them think before they commit, not another chatbot that tells them what to do.
 
-| Screen | Placeholder |
-| --- | --- |
-| Decision intake | `docs/screenshots/01-decision-intake.png` |
-| Decision Blueprint | `docs/screenshots/02-decision-blueprint.png` |
-| Stress test and reflection | `docs/screenshots/03-reflection.png` |
+## Solution
+
+Prism uses GPT-5.6 to produce a structured decision model instead of an unstructured chat response. The model is presented through an interactive workspace where users can inspect the reasoning, compare conditions, and identify what they should verify next.
+
+The product uses transparent language throughout: outputs are framed as working hypotheses and plausible scenarios, never predictions or directives.
+
+## Key features
+
+- **Decision Blueprint** - maps goals, values, constraints, unknowns, risks, assumptions, stakeholders, resources, success criteria, and opportunities.
+- **Dynamic Reasoning Lenses** - selects relevant perspectives for each decision and explains why each lens matters.
+- **Scenario Explorer** - compares branches where assumptions hold, weaken, or external conditions change.
+- **Decision Stress Test** - pressure-tests a selected assumption before reality does.
+- **Decision Sandbox** - adjusts time, budget, risk tolerance, and priorities to reveal what the plan is most sensitive to.
+- **Decision Confidence Map** - separates well-supported areas from personal judgments, uncertainty, and items that need verification.
+- **Research Mode** - converts uncertainty into concrete next steps for gathering evidence.
+- **Demo Mode** - remains fully explorable without an API key, API quota, or network connection.
+
+## Tech stack
+
+- **Framework:** Next.js 16, React 19
+- **Language:** JavaScript
+- **AI:** OpenAI Responses API with GPT-5.6
+- **Validation:** Zod
+- **Motion and UI:** Motion, Lucide, bespoke responsive CSS
+- **Deployment:** Vercel
 
 ## Architecture
 
 ```text
 Browser
-  -> guided decision context
-  -> secure Next.js API route
+  -> Decision and context intake
+  -> Next.js server route (/api/analyze)
   -> OpenAI Responses API (GPT-5.6)
-  -> validated decision model
-  -> interactive Prism workspace
+  -> Zod-validated decision model
+  -> Interactive Prism workspace
 ```
 
-- The OpenAI key is server-only and never reaches the browser.
-- Requests and model responses are validated with Zod.
-- The API does not store responses (`store: false`).
-- The active workspace is saved locally so a refresh does not lose a decision.
-- If an API key, quota, or connection is unavailable, Prism remains fully explorable in Demo Mode.
+- API keys remain server-side and are never exposed to the browser.
+- Model output is validated before it reaches the UI.
+- Responses are not stored by the API route (`store: false`).
+- The active decision workspace is saved locally so accidental refreshes do not lose work.
+- When live analysis is unavailable, Prism provides a polished interactive demo rather than a broken screen.
 
-## Tech stack
+## Run locally
 
-- Next.js 16 and React 19
-- Motion for restrained UI transitions
-- Lucide icons
-- OpenAI Responses API
-- Zod validation
-- Vercel deployment
-
-## Local development
-
-Requirements: Node.js 20.9 or later and npm.
+Requirements: Node.js 20.9+ and npm.
 
 ```bash
 npm install
@@ -77,18 +83,38 @@ PRISM_OPENAI_MODEL=gpt-5.6
 NEXT_PUBLIC_SITE_URL=https://your-prism-domain.vercel.app
 ```
 
-`OPENAI_API_KEY` is optional for local exploration. Without it, Prism opens its interactive sample model instead of making an API request.
+`OPENAI_API_KEY` is optional: without it, Prism launches in Demo Mode.
 
-## Deploy to Vercel
+## Deployment
+
+Prism is ready for one-click deployment on Vercel.
 
 1. Push this repository to GitHub.
-2. In [Vercel](https://vercel.com/new), import the repository.
-3. Vercel detects Next.js automatically. Keep the default build command: `npm run build`.
-4. Add `OPENAI_API_KEY` in **Project Settings -> Environment Variables** for Production and Preview if live analysis is desired.
-5. Set `PRISM_OPENAI_MODEL` to the GPT-5.6 model identifier available to the project.
-6. After the first deployment, set `NEXT_PUBLIC_SITE_URL` to the deployed Vercel URL or custom domain, then redeploy.
+2. Import the repository at [vercel.com/new](https://vercel.com/new).
+3. Keep Vercel's default Next.js build settings.
+4. Add `OPENAI_API_KEY` and `PRISM_OPENAI_MODEL` in **Project Settings -> Environment Variables** to enable live analysis.
+5. After deployment, set `NEXT_PUBLIC_SITE_URL` to the deployed Vercel URL or custom domain and redeploy.
 
-No database, account setup, or rebuild is required for judges to explore Demo Mode.
+Judges can still explore every core interaction in Demo Mode without configuring credentials.
+
+## How Codex accelerated development
+
+Codex was used as an active product-engineering partner throughout the project:
+
+- Designed and refactored the component architecture for the intake, workspace, and server route.
+- Built the interactive reasoning interface, keyboard navigation, responsive states, and motion system.
+- Hardened API validation, timeout handling, quota recovery, offline behavior, and Demo Mode.
+- Prepared the project for deployment with metadata, Open Graph assets, manifest, sitemap, robots, linting, and production-build verification.
+
+GPT-5.6 powers Prism's structured decision reasoning; Codex accelerated the implementation, iteration, and production polish around it.
+
+## Future improvements
+
+- Optional authenticated decision history and cross-device sync.
+- User-editable Blueprint items and saved scenario comparisons.
+- Evidence connectors for user-approved sources and citations.
+- Shared decision workspaces for teams.
+- Exportable decision reports.
 
 ## Quality checks
 
@@ -97,14 +123,6 @@ npm run lint
 npm run build
 ```
 
-Both checks should pass before every deployment.
-
-## Hackathon notes
-
-Prism uses GPT-5.6 for structured decision reasoning and is built iteratively with Codex. Codex accelerated the component architecture, interaction implementation, server route hardening, accessibility refinements, and deployment preparation.
-
-For the demo video, show a single decision move from intake to Blueprint, pressure-test one assumption, adjust a sandbox control, and end on the Reflection screen. The product story is: **Prism does not replace judgment; it makes judgment more rigorous.**
-
 ## License
 
-[MIT](LICENSE)
+Released under the [MIT License](LICENSE).
