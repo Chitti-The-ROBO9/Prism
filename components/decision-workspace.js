@@ -28,8 +28,16 @@ export function DecisionWorkspace({ analysis, source, onNewDecision }) {
   const selectedAssumption = analysis.blueprint.assumptions[activeAssumption] || "this assumption";
   const sensitivity = sandbox.time < 45 ? "available time" : sandbox.budget < 40 ? "financial runway" : sandbox.risk < 35 ? "risk tolerance" : "the balance between learning and income";
 
+  const providerLabel = source === "groq"
+    ? "Groq (Live)"
+    : source === "openai"
+    ? "OpenAI (Live)"
+    : source === "live"
+    ? "Live analysis"
+    : "Demo Mode";
+
   return <motion.section className="workspace" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.44, ease: [0.22, 1, 0.36, 1] }}>
-    <header className="workspace-head"><div><p className="eyebrow">Decision workspace <span className="demo-pill">{source === "demo" ? "Demo Mode" : "Live analysis"}</span></p><h1>{analysis.title}</h1><p>{analysis.summary}</p></div><button className="secondary-button" type="button" onClick={onNewDecision}><Plus size={16} /> New decision</button></header>
+    <header className="workspace-head"><div><p className="eyebrow">Decision workspace <span className="demo-pill">{providerLabel}</span></p><h1>{analysis.title}</h1><p>{analysis.summary}</p></div><button className="secondary-button" type="button" onClick={onNewDecision}><Plus size={16} /> New decision</button></header>
     <nav className="workspace-nav" aria-label="Decision workspace sections"><a href="#blueprint"><Target size={16} /> Blueprint</a><a href="#lenses"><ScanSearch size={16} /> Lenses</a><a href="#scenarios"><Compass size={16} /> Scenarios</a><a href="#reflection"><Lightbulb size={16} /> Reflection</a></nav>
     {source === "demo" && <div className="demo-mode-notice" role="status"><Sparkles size={16} /><span className="demo-mode-badge">Demo Mode</span><span>Live AI analysis is unavailable. This is a simulated analysis for demonstration.</span></div>}
     <BlueprintPanel analysis={analysis} activeBlueprint={activeBlueprint} setActiveBlueprint={setActiveBlueprint} />

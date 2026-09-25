@@ -54,7 +54,7 @@ flowchart TD
     frontend[Next.js Frontend<br/>Decision intake and workspace]
     api[API Routes<br/>/api/analyze]
     engine[Prism Reasoning Engine<br/>Prompt orchestration and validation]
-    openai[OpenAI Responses API<br/>GPT-5.6]
+    openai[OpenAI or Groq OpenAI-compatible API]
     json[Structured JSON Response<br/>Zod-validated decision model]
     ui[Interactive UI<br/>Blueprint, lenses, scenarios, reflection]
 
@@ -99,12 +99,36 @@ Open [http://localhost:3000](http://localhost:3000).
 ### Environment variables
 
 ```bash
-OPENAI_API_KEY=your_key_here
+OPENAI_API_KEY=
 PRISM_OPENAI_MODEL=gpt-5.6
+GROQ_API_KEY=
+PRISM_GROQ_MODEL=openai/gpt-oss-120b
+PRISM_AI_PROVIDER=openai
 NEXT_PUBLIC_SITE_URL=https://your-prism-domain.vercel.app
 ```
 
-`OPENAI_API_KEY` is optional: without it, Prism launches in Demo Mode.
+#### Provider configuration
+
+**OpenAI:**
+```bash
+PRISM_AI_PROVIDER=openai
+OPENAI_API_KEY=your_openai_api_key_here
+PRISM_OPENAI_MODEL=gpt-5.6
+```
+
+**Groq:**
+```bash
+PRISM_AI_PROVIDER=groq
+GROQ_API_KEY=your_groq_api_key_here
+PRISM_GROQ_MODEL=openai/gpt-oss-120b
+```
+
+**Demo Mode:**
+```bash
+PRISM_AI_PROVIDER=demo
+```
+
+> **Security Note:** All API keys (`OPENAI_API_KEY`, `GROQ_API_KEY`) must remain server-side in `.env.local` or your deployment platform's environment settings. Never prefix them with `NEXT_PUBLIC_`, commit real keys to git, or send them from browser code. All model interactions run strictly on the Next.js server route (`/api/analyze`).
 
 ## Deployment
 
@@ -113,7 +137,7 @@ Prism is ready for one-click deployment on Vercel.
 1. Push this repository to GitHub.
 2. Import the repository at [vercel.com/new](https://vercel.com/new).
 3. Keep Vercel's default Next.js build settings.
-4. Add `OPENAI_API_KEY` and `PRISM_OPENAI_MODEL` in **Project Settings -> Environment Variables** to enable live analysis.
+4. Add the provider's server-side API key, model variable, and `PRISM_AI_PROVIDER` in **Project Settings -> Environment Variables** to enable live analysis.
 5. After deployment, set `NEXT_PUBLIC_SITE_URL` to the deployed Vercel URL or custom domain and redeploy.
 
 Judges can still explore every core interaction in Demo Mode without configuring credentials.
@@ -127,7 +151,7 @@ Codex was used as an active product-engineering partner throughout the project:
 - Hardened API validation, timeout handling, quota recovery, offline behavior, and Demo Mode.
 - Prepared the project for deployment with metadata, Open Graph assets, manifest, sitemap, robots, linting, and production-build verification.
 
-GPT-5.6 powers Prism's structured decision reasoning; Codex accelerated the implementation, iteration, and production polish around it.
+The configured OpenAI or Groq model powers Prism's structured decision reasoning; Codex accelerated the implementation, iteration, and production polish around it.
 
 ## Future improvements
 

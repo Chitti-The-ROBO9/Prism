@@ -20,10 +20,35 @@ const MIN_LOADING_MS = 850;
 
 function formatApiError(response, payload) {
   const fallback = "Prism could not complete that analysis just now. Please try again.";
-  if (response.status === 429 || payload?.code === "quota_exhausted") return { message: "Your OpenAI credits or request quota are currently unavailable. Please check your account, wait a moment, or use the interactive demo.", retryable: true };
-  if (response.status === 408 || response.status === 504 || payload?.code === "upstream_timeout") return { message: "Prism took too long to build this model. Your decision is still here - please try again.", retryable: true };
-  if (response.status >= 500) return { message: payload?.error || fallback, retryable: true };
-  return { message: payload?.error || fallback, retryable: false };
+  const provider = payload?.provider ? payload.provider.toUpperCase() : "";
+  const prefix = provider ? `[${provider}] ` : "";
+  const detailText = payload?.details ? ` (${payload.details})` : "";
+
+  if (response.status === 429 || payload?.code === "quota_exhausted") {
+    return {
+      message: `${prefix}${payload?.message || "The configured AI provider is temporarily unavailable. Please check its account or try again later."}${detailText}`,
+      retryable: true
+    };
+  }
+  if (response.status === 408 || response.status === 504 || payload?.code === "upstream_timeout") {
+    return {
+      message: `${prefix}Prism took too long to build this model. Your decision is still here - please try again.${detailText}`,
+      retryable: true
+    };
+  }
+  if (payload?.message) {
+    return {
+      message: `${prefix}${payload.message}${detailText}`,
+      retryable: response.status >= 500 || payload?.code === "invalid_model_output"
+    };
+  }
+  if (typeof payload?.error === "string") {
+    return {
+      message: `${prefix}${payload.error}${detailText}`,
+      retryable: response.status >= 500
+    };
+  }
+  return { message: fallback, retryable: true };
 }
 
 function isWorkspaceSession(session) {
@@ -54,7 +79,8 @@ export default function Prism() {
       setDecision(restoredSession.decision);
       setContext({ ...defaultContext, ...restoredSession.context });
       setAnalysis(restoredSession.analysis);
-      setSource(restoredSession.source === "live" ? "live" : "demo");
+      const validSources = ["openai", "groq", "demo", "live"];
+      setSource(validSources.includes(restoredSession.source) ? restoredSession.source : "demo");
       setStage("workspace");
     }, 0);
     return () => window.clearTimeout(restore);
@@ -93,13 +119,9 @@ export default function Prism() {
       const remainingDelay = Math.max(0, MIN_LOADING_MS - (Date.now() - startedAt));
       if (remainingDelay) await new Promise((resolve) => window.setTimeout(resolve, remainingDelay));
       if (!response.ok) throw { response, payload };
-      openWorkspace(payload.analysis || createDemoAnalysis(decision, context), payload.demo ? "demo" : "live");
+      const resultSource = payload.provider || (payload.demo ? "demo" : "live");
+      openWorkspace(payload.analysis || createDemoAnalysis(decision, context), resultSource);
     } catch (failure) {
-      const shouldUseDemo = failure?.name === "AbortError" || !failure?.response || failure.response.status === 429 || failure.response.status >= 500;
-      if (shouldUseDemo) {
-        openWorkspace(createDemoAnalysis(decision, context), "demo");
-        return;
-      }
       const error = failure?.name === "AbortError"
         ? { message: "Prism took too long to build this model. Your decision is still here - please try again.", retryable: true }
         : failure?.response ? formatApiError(failure.response, failure.payload) : { message: "Your connection was interrupted. Please check it and try again.", retryable: true };
